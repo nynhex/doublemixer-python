@@ -1,12 +1,15 @@
 #!/usr/bin/python3
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 import logging
+import random
 
 import aaargh
 import bitmix
+import foxmixer
 import privcoin
+import pyqrcode
 
 from . import validate
 
@@ -16,18 +19,28 @@ cli = aaargh.App()
 logging.basicConfig(level=logging.WARNING)
 
 
+def random_mixers(count=2):
+    """
+    Returns a list of mixers with the same mixing API.
+
+    Order will be random as well.
+    """
+    return random.sample([bitmix, privcoin, foxmixer], count)
+
+
 def mix(currency, output_address):
     """
     currency must be one of: bitcoin
     output_address is destination for double mixed coins.
     """
     validate.currency(currency)
-    privcoin_output = privcoin.mix(currency=currency,
-                                   output_address=output_address)
-    final_mix_address = privcoin_output['address']
-    bitmix_output = bitmix.mix(currency=currency,
-                               output_address=final_mix_address)
-    return bitmix_output['input_address']
+    mixers = random_mixers()
+    mix_1 = mixers[0].mix(currency=currency,
+                          output_address=output_address)
+    final_mix_address = mix_1['address']
+    mix_2 = mixers[1].mix(currency=currency,
+                          output_address=final_mix_address)
+    return mix_2['address']
 
 
 @cli.cmd(name='mix')
@@ -42,19 +55,26 @@ def _mix_terminal(currency, output_address):
     """
     validate.currency(currency)
 
-    privcoin_output = privcoin.mix(currency=currency,
-                                   output_address=output_address)
-    final_mix_address = privcoin_output['address']
-    bitcode = privcoin_output['bitcode']
+    mixers = random_mixers()
+    mix_1 = mixers[0].mix(currency=currency,
+                          output_address=output_address)
+    final_mix_address = mix_1['address']
+    mix_2 = mixers[1].mix(currency=currency,
+                          output_address=final_mix_address)
 
-    privcoin_letter = privcoin.letter_of_guarantee(bitcode)
+    mix_1_letter = mixers[0].letter_of_guarantee(mix_1['id'])
+    mix_2_letter = mixers[1].letter_of_guarantee(mix_2['id'])
+    send_to_address = mix_2['address']
 
-    # Terminal output
-    bitmix_output = bitmix._mix_terminal(currency=currency,
-                                         output_address=final_mix_address)
-
-    msg = 'Final mix bitcode: {}\nFinal mix guarantee:\n{}\n{}'
-    output = msg.format(bitcode, privcoin_letter, bitmix_output)
+    msg = 'Letter of guarantee for first mix: \n\n{}\n\n'\
+          'Letter of guarantee for final mix: \n\n{}\n\n'\
+          '{}\n'\
+          '{}\n'
+    uri = '{}:{}'.format(currency, send_to_address)
+    qr = pyqrcode.create(uri).terminal(module_color='black',
+                                       background='white',
+                                       quiet_zone=1)
+    output = msg.format(mix_2_letter, mix_1_letter, qr, uri)
 
     return output
 

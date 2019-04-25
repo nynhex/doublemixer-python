@@ -12,6 +12,10 @@ The first mixer knows your output address, the second knows the first mixer's in
 
 * `doublemixer mix --currency bitcoin --address 1a....`
 
+## Screenshot
+
+![doublemixer screenshot](https://pic8.co/sh/opLCYG.png)
+
 # Licence
 
 [Unlicense/Public domain](LICENSE.txt)
