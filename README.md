@@ -12,6 +12,14 @@ The first mixer knows your output address, the second knows the first mixer's in
 
 * `doublemixer mix --currency bitcoin --address 1a....`
 
+## Mixers
+
+Randomly selects two of the following mixers:
+
+* [Privcoin](https://github.com/teran-mckinney/privcoin-python)
+* [Bitmix](https://github.com/teran-mckinney/bitmix-python)
+* [FoxMixer](https://github.com/teran-mckinney/foxmixer-python)
+
 ## Screenshot
 
 ![doublemixer screenshot](https://pic8.co/sh/opLCYG.png)
